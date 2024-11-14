@@ -1,0 +1,70 @@
+---
+title: "GPA analysis"
+author: "hongwei qin"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## GPA分析
+
+-   请将你的科目成绩按照下面的方式存入`xlsx`文件中,放在该Rmd文件同一目录下
+-   命名为`gpa.xlsx`,格式如下
+
+| course  | credit | score |
+|---------|--------|-------|
+| course1 | 4      | 84    |
+
+```{r}
+library(readxl)
+data = read_xlsx("gpa.xlsx")
+```
+
+```{r}
+score = data$score
+credit = data$credit
+course = data$course
+```
+
+定义绩点函数 $GPA = \begin{cases}
+\frac{4 - 3(100 - x)^2}{1600}, & \text{if } x \geq 60 \\
+0, & \text{if } x < 60
+\end{cases}$
+
+```{r}
+gpa <- function(score)
+{
+  t = 4 - 3*(100-score)^2/1600
+  t[t<0] = 0
+  t = round(t,2)
+  return(t)
+}
+```
+
+计算
+
+```{r}
+p_gpa = gpa(score)
+sum_credit = sum(credit)
+sum_gpa = sum(credit * gpa(score))
+average_gpa = sum_gpa/sum_credit
+average_gpa = round(average_gpa,3)
+p_table = data.frame(course = course,
+                     credit = credit,
+                     score = score,
+                     gpa = p_gpa)
+
+p_table <- p_table[order(p_table$credit, p_table$score, decreasing = c(TRUE, FALSE)),]
+```
+
+结果
+
+```{r}
+average_gpa
+sum_credit
+sum_gpa
+p_table
+```
